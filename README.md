@@ -16,8 +16,8 @@ Ce projet implémente le modèle UML de gestion de vols et réservations défini
 ## Compilation et exécution
 
 ```bash
-./gradlew build
-./gradlew test
+ ./gradlew build                                                                                                                                                                                                                                                                                                                 ─╯
+./gradlew run
 ```
 
 ## Exemple d'exécution
