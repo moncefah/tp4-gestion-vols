@@ -1,66 +1,103 @@
 package gestionVol;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Représente un aéroport.
+ */
 public class Aeroport {
     private String nom;
-    private List<Ville> villes = new ArrayList<>();
-    private List<Vol> volsDepart = new ArrayList<>();
-    private List<Vol> volsArrivee = new ArrayList<>();
-    private List<Escale> escales = new ArrayList<>();
+    private Ville ville;
+    private final List<Vol> volsDepart = new ArrayList<>();
+    private final List<Vol> volsArrivee = new ArrayList<>();
+    private final List<Escale> escales = new ArrayList<>();
 
-    public Aeroport(String nom) {
+    public Aeroport(String nom, Ville ville) {
+        Objects.requireNonNull(nom, "Le nom de l'aéroport ne peut pas être null");
+        Objects.requireNonNull(ville, "La ville ne peut pas être null");
+        this.nom = nom;
+        this.ville = ville;
+        ville.addAeroport(this);
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        Objects.requireNonNull(nom, "Le nom de l'aéroport ne peut pas être null");
         this.nom = nom;
     }
 
-    // ----- Gestion des vols au départ -----
+    public Ville getVille() {
+        return ville;
+    }
+
+    /**
+     * Définit la ville de cet aéroport, gère la double navigabilité.
+     * Accepte null pour retirer l'aéroport de sa ville.
+     */
+    public void setVille(Ville nouvelleVille) {
+        if (this.ville != nouvelleVille) {
+            // Retirer de l'ancienne ville
+            if (this.ville != null) {
+                this.ville.removeAeroport(this);
+            }
+            // Mettre à jour la référence
+            this.ville = nouvelleVille;
+            // Ajouter à la nouvelle ville
+            if (nouvelleVille != null) {
+                nouvelleVille.addAeroport(this);
+            }
+        }
+    }
+
     public List<Vol> getVolsDepart() {
-        return volsDepart;
+        return Collections.unmodifiableList(volsDepart);
     }
 
     public void addVolDepart(Vol vol) {
-        if (vol != null && !volsDepart.contains(vol)) {
+        Objects.requireNonNull(vol, "Le vol ne peut pas être null");
+        if (!volsDepart.contains(vol)) {
             volsDepart.add(vol);
-            // appel corrigé
-            vol.setDepart(this);
+            vol.setAeroportDepart(this);
         }
     }
 
     public void removeVolDepart(Vol vol) {
         if (volsDepart.remove(vol)) {
-            // appel corrigé
-            vol.setDepart(null);
+            vol.setAeroportDepart(null);
         }
     }
 
-    // ----- Gestion des vols à l'arrivée -----
     public List<Vol> getVolsArrivee() {
-        return volsArrivee;
+        return Collections.unmodifiableList(volsArrivee);
     }
 
     public void addVolArrivee(Vol vol) {
-        if (vol != null && !volsArrivee.contains(vol)) {
+        Objects.requireNonNull(vol, "Le vol ne peut pas être null");
+        if (!volsArrivee.contains(vol)) {
             volsArrivee.add(vol);
-            // appel corrigé
-            vol.setArrivee(this);
+            vol.setAeroportArrivee(this);
         }
     }
 
     public void removeVolArrivee(Vol vol) {
         if (volsArrivee.remove(vol)) {
-            // appel corrigé
-            vol.setArrivee(null);
+            vol.setAeroportArrivee(null);
         }
     }
 
-    // ----- Gestion des escales -----
     public List<Escale> getEscales() {
-        return escales;
+        return Collections.unmodifiableList(escales);
     }
 
     public void addEscale(Escale escale) {
-        if (escale != null && !escales.contains(escale)) {
+        Objects.requireNonNull(escale, "L'escale ne peut pas être null");
+        if (!escales.contains(escale)) {
             escales.add(escale);
             escale.setAeroport(this);
         }
@@ -72,29 +109,8 @@ public class Aeroport {
         }
     }
 
-    // ----- Gestion des villes desservies -----
-    public String getNom() {
+    @Override
+    public String toString() {
         return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public List<Ville> getVilles() {
-        return villes;
-    }
-
-    public void addVille(Ville ville) {
-        if (ville != null && !villes.contains(ville)) {
-            villes.add(ville);
-            ville.addAeroport(this);
-        }
-    }
-
-    public void removeVille(Ville ville) {
-        if (villes.remove(ville)) {
-            ville.removeAeroport(this);
-        }
     }
 }

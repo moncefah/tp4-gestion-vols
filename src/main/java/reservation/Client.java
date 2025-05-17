@@ -1,45 +1,78 @@
 package reservation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Représente un client effectuant des réservations.
+ */
 public class Client {
     private String nom;
-    private String reference;
-    private String paiement;
+    private String referencePaiement;
     private String contact;
-    private List<Reservation> reservations = new ArrayList<>();
+    private final List<Reservation> reservations = new ArrayList<>();
 
-    public Client(String nom, String reference, String paiement, String contact) {
-        this.nom = nom;
-        this.reference = reference;
-        this.paiement = paiement;
-        this.contact = contact;
+    public Client(String nom, String referencePaiement, String contact) {
+        setNom(nom);
+        setReferencePaiement(referencePaiement);
+        setContact(contact);
     }
 
-    public String getNom() { return nom; }
-    public void setNom(String nom) { this.nom = nom; }
+    public String getNom() {
+        return nom;
+    }
 
-    public String getReference() { return reference; }
-    public void setReference(String reference) { this.reference = reference; }
+    public void setNom(String nom) {
+        Objects.requireNonNull(nom, "Le nom du client ne peut pas être null");
+        this.nom = nom;
+    }
 
-    public String getPaiement() { return paiement; }
-    public void setPaiement(String paiement) { this.paiement = paiement; }
+    public String getReferencePaiement() {
+        return referencePaiement;
+    }
 
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
+    public void setReferencePaiement(String referencePaiement) {
+        Objects.requireNonNull(referencePaiement, "La référence de paiement ne peut pas être null");
+        this.referencePaiement = referencePaiement;
+    }
 
-    public List<Reservation> getReservations() { return reservations; }
-    public void addReservation(Reservation r) {
-        if (r != null && !reservations.contains(r)) {
-            reservations.add(r);
-            r.setClient(this);
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        Objects.requireNonNull(contact, "Le contact ne peut pas être null");
+        this.contact = contact;
+    }
+    public String toString() {
+        return nom;
+    }
+    /**
+     * Retourne la liste immuable des réservations de ce client.
+     */
+    public List<Reservation> getReservations() {
+        return Collections.unmodifiableList(reservations);
+    }
+
+    /**
+     * Ajoute une réservation pour ce client, met à jour la navigation inverse.
+     */
+    public void addReservation(Reservation reservation) {
+        Objects.requireNonNull(reservation, "La réservation ne peut pas être null");
+        if (!reservations.contains(reservation)) {
+            reservations.add(reservation);
+            reservation.setClient(this);
         }
     }
 
-    public void removeReservation(Reservation r) {
-        if (reservations.remove(r)) {
-            r.setClient(null);
+    /**
+     * Retire une réservation de ce client, met à jour la navigation inverse.
+     */
+    public void removeReservation(Reservation reservation) {
+        if (reservations.remove(reservation)) {
+            reservation.setClient(null);
         }
     }
 }

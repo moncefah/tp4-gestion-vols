@@ -5,149 +5,86 @@ import reservation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
-
     public static void main(String[] args) {
-        // 1. Préparation des données
-        List<Ville> villes = initializeCities();
-        Compagnie af = initializeCompanyAndFlights(villes);
-
-        // 2. Affichage des villes et de leurs aéroports
-        System.out.println("=== Villes et Aéroports ===");
-        for (Ville ville : villes) {
-            System.out.printf("Ville : %s%n", ville.getNom());
-            for (Aeroport ap : ville.getAeroports()) {
-                System.out.printf("  - %s%n", ap.getNom());
-            }
-        }
-
-        // 3. Liste des vols de la compagnie
-        System.out.printf("%n=== Vols de %s ===%n", af.getNom());
-        for (Vol vol : af.getVols()) {
-            System.out.printf(
-                "Vol %d : %s -> %s | Départ : %s | Arrivée : %s | Durée : %dh | Ouvert : %b%n",
-                vol.getNumero(),
-                vol.getDepart().getNom(),
-                vol.getArrivee().getNom(),
-                vol.getDateDepart(),
-                vol.getDateArrivee(),
-                vol.getDuree().toHours(),
-                vol.isOuvert()
-            );
-        }
-
-        // 4. Création de réservations (non interactif)
-        Reservation r1 = new Reservation(10001, LocalDate.of(2025, 6, 1));
-        Client c1 = new Client("Martin", "MRT123", "Visa", "martin@example.com");
-        c1.addReservation(r1);
-        r1.setVol(af.getVols().get(0)); // premier vol
-        r1.addPassager(new Passager("Alice Martin"));
-        r1.addPassager(new Passager("Bob Martin"));
-        r1.confirmer();
-
-        Reservation r2 = new Reservation(10002, LocalDate.of(2025, 6, 2));
-        Client c2 = new Client("Durand", "DRD456", "Mastercard", "durand@example.com");
-        c2.addReservation(r2);
-        r2.setVol(af.getVols().get(1)); // deuxième vol
-        r2.addPassager(new Passager("Claire Durand"));
-        // on laisse cette réservation non confirmée
-
-        // 5. Affichage des réservations par vol
-        System.out.println("\n=== Réservations par vol ===");
-        for (Vol vol : af.getVols()) {
-            System.out.printf("Vol %d (%s -> %s) :%n",
-                vol.getNumero(),
-                vol.getDepart().getNom(),
-                vol.getArrivee().getNom()
-            );
-            if (vol.getReservations().isEmpty()) {
-                System.out.println("  (aucune réservation)");
-            } else {
-                for (Reservation res : vol.getReservations()) {
-                    System.out.printf(
-                        "  #%d | Client: %s | Passagers: %d | Confirmée: %b%n",
-                        res.getNumero(),
-                        res.getClient().getNom(),
-                        res.getPassagers().size(),
-                        res.isConfirme()
-                    );
-                }
-            }
-        }
-
-        // 6. Fermeture d'un vol et test d'état
-        Vol lastFlight = af.getVols().get(af.getVols().size() - 1);
-        lastFlight.fermer();
-        System.out.printf("%nLe vol %d est maintenant fermé : ouvert = %b%n",
-            lastFlight.getNumero(),
-            lastFlight.isOuvert()
-        );
-    }
-
-    private static List<Ville> initializeCities() {
+        // Création d'une ville et de deux aéroports
         Ville paris = new Ville("Paris");
-        Ville lyon  = new Ville("Lyon");
-        Ville nice  = new Ville("Nice");
+        Aeroport cdg = new Aeroport("Charles de Gaulle", paris);
+        Aeroport orly = new Aeroport("Orly", paris);
 
-        Aeroport cdg  = new Aeroport("CDG");
-        Aeroport orly = new Aeroport("Orly");
-        Aeroport stEx = new Aeroport("Saint-Exupéry");
-        Aeroport nce  = new Aeroport("Nice Côte d'Azur");
+        // Création d'une compagnie et d'un vol
+        Compagnie airFrance = new Compagnie("Air France");
+        LocalDateTime dep = LocalDateTime.of(2025, 6, 1, 10, 0);
+        LocalDateTime arr = LocalDateTime.of(2025, 6, 1, 12, 30);
+        Vol volAF123 = new Vol("AF123", dep, arr);
+        airFrance.addVol(volAF123);
 
-        paris.addAeroport(cdg);
-        paris.addAeroport(orly);
-        lyon.addAeroport(stEx);
-        nice.addAeroport(nce);
+        // Assignation des aéroports de départ et d'arrivée
+        volAF123.setAeroportDepart(cdg);
+        volAF123.setAeroportArrivee(orly);
 
-        List<Ville> villes = new ArrayList<>();
-        villes.add(paris);
-        villes.add(lyon);
-        villes.add(nice);
-        return villes;
-    }
+        // Ajout d'une escale
+        LocalDateTime escDep = LocalDateTime.of(2025, 6, 1, 11, 0);
+        LocalDateTime escArr = LocalDateTime.of(2025, 6, 1, 11, 15);
+        Escale escale = new Escale(escDep, escArr);
+        volAF123.addEscale(escale);
+        escale.setAeroport(cdg);
 
-    private static Compagnie initializeCompanyAndFlights(List<Ville> villes) {
-        Compagnie af = new Compagnie("Air France");
+        // Création d'un client et d'une réservation
+        Client client = new Client("Dupont", "REF123", "+33123456789");
+        Reservation reservation = new Reservation("R001", LocalDate.of(2025, 5, 15));
+        client.addReservation(reservation);
+        reservation.setVol(volAF123);
 
-        Aeroport cdg  = villes.get(0).getAeroports().get(0);
-        Aeroport orly = villes.get(0).getAeroports().get(1);
-        Aeroport stEx = villes.get(1).getAeroports().get(0);
-        Aeroport nce  = villes.get(2).getAeroports().get(0);
+        // Ajout d'un passager
+        Passager passager = new Passager("Martin");
+        reservation.addPassager(passager);
 
-        // Vols avec escales multiples
-        Vol v1 = new Vol(2001,
-            LocalDateTime.of(2025, 7, 1,  8, 30),
-            LocalDateTime.of(2025, 7, 1, 12, 45),
-            cdg, nce);
-        Escale es1 = new Escale(
-            stEx,  // <-- Aéroport de l'escale
-            LocalDateTime.of(2025, 7, 1, 10,  0),
-            LocalDateTime.of(2025, 7, 1, 10, 45)
-        );
-        v1.addEscale(es1);
+        // Affichage de l'état
+        System.out.println("Ville: " + paris.getNom());
+        System.out.println("Aéroports: " + paris.getAeroports());
+        System.out.println("Compagnie: " + airFrance.getNom());
+        System.out.println("Vol: " + volAF123.getNumero() + " de " + volAF123.getAeroportDepart().getNom()
+                + " à " + volAF123.getAeroportArrivee().getNom() + ", durée=" + volAF123.getDuree());
+        System.out.println("Nombre d'escales: " + volAF123.getEscales().size());
+        System.out.println("Client: " + client.getNom() + ", Réservations: " + client.getReservations().size());
+        System.out.println("Passagers sur R001: " + reservation.getPassagers().get(0).getNom());
 
-        Vol v2 = new Vol(2002,
-            LocalDateTime.of(2025, 7, 2, 14,  0),
-            LocalDateTime.of(2025, 7, 2, 15, 30),
-            stEx, orly);
+        // Tests de bidirectionnalité
+        System.out.println("\n-- Tests de bidirectionnalité --");
+        System.out.println("Compagnie propose vol: " + airFrance.getVols().contains(volAF123));
+        System.out.println("Vol appartient à compagnie: " + (volAF123.getCompagnie() == airFrance));
+        System.out.println("CDG volsDepart contient vol: " + cdg.getVolsDepart().contains(volAF123));
+        System.out.println("Vol aeroportDepart est CDG: " + (volAF123.getAeroportDepart() == cdg));
+        System.out.println("Ville Paris contient CDG: " + paris.getAeroports().contains(cdg));
+        System.out.println("Aéroport CDG ville est Paris: " + (cdg.getVille() == paris));
+        System.out.println("Client Dupont reservations contient R001: " + client.getReservations().contains(reservation));
+        System.out.println("Réservation client est Dupont: " + (reservation.getClient() == client));
+        System.out.println("Réservation R001 passagers contient Martin: " + reservation.getPassagers().contains(passager));
+        System.out.println("Passager Martin reservations contient R001: " + passager.getReservations().contains(reservation));
 
-        Vol v3 = new Vol(2003,
-            LocalDateTime.of(2025, 7, 3,  6, 15),
-            LocalDateTime.of(2025, 7, 3,  8,  0),
-            orly, cdg);
-
-        af.addVol(v1);
-        af.addVol(v2);
-        af.addVol(v3);
-
-        // Ouvre tous les vols
-        for (Vol v : af.getVols()) {
-            v.ouvrir();
-        }
-
-        return af;
+        // Tests de suppression bidirectionnelle
+        System.out.println("\n-- Tests de suppression bidirectionnelle --");
+        // Suppression Vol de la Compagnie
+        airFrance.removeVol(volAF123);
+        System.out.println("Après suppression vol de Compagnie: " + (!airFrance.getVols().contains(volAF123))
+                + ", vol.getCompagnie()==null: " + (volAF123.getCompagnie() == null));
+        // Suppression Escale du Vol
+        volAF123.removeEscale(escale);
+        System.out.println("Après suppression escale du Vol: " + (!volAF123.getEscales().contains(escale))
+                + ", escale.getVol()==null: " + (escale.getVol() == null));
+        // Suppression Reservation du Client
+        client.removeReservation(reservation);
+        System.out.println("Après suppression réservation du Client: " + (!client.getReservations().contains(reservation))
+                + ", reservation.getClient()==null: " + (reservation.getClient() == null));
+        // Suppression Passager de la Réservation
+        reservation.removePassager(passager);
+        System.out.println("Après suppression passager de réservation: " + (!reservation.getPassagers().contains(passager))
+                + ", passager.getReservations().contains==false: " + (!passager.getReservations().contains(reservation)));
+        // Suppression Aéroport de la Ville
+        paris.removeAeroport(cdg);
+        System.out.println("Après suppression CDG de la ville: " + (!paris.getAeroports().contains(cdg))
+                + ", cdg.getVille()==null: " + (cdg.getVille() == null));
     }
 }
